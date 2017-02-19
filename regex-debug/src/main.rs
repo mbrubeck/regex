@@ -1,6 +1,7 @@
 extern crate docopt;
 extern crate regex;
 extern crate regex_syntax as syntax;
+extern crate regex_syntax2;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
@@ -17,6 +18,7 @@ use syntax::{ExprBuilder, Expr, Literals};
 const USAGE: &'static str = "
 Usage:
     regex-debug [options] ast <pattern>
+    regex-debug [options] ast2 <pattern>
     regex-debug [options] prefixes <patterns> ...
     regex-debug [options] suffixes <patterns> ...
     regex-debug [options] anchors <pattern>
@@ -51,6 +53,7 @@ Options:
 #[derive(Deserialize)]
 struct Args {
     cmd_ast: bool,
+    cmd_ast2: bool,
     cmd_prefixes: bool,
     cmd_suffixes: bool,
     cmd_anchors: bool,
@@ -93,6 +96,8 @@ fn main() {
 fn run(args: &Args) -> Result<()> {
     if args.cmd_ast {
         cmd_ast(args)
+    } else if args.cmd_ast2 {
+        cmd_ast2(args)
     } else if args.cmd_prefixes {
         cmd_literals(args)
     } else if args.cmd_suffixes {
@@ -110,6 +115,15 @@ fn run(args: &Args) -> Result<()> {
 
 fn cmd_ast(args: &Args) -> Result<()> {
     println!("{:#?}", try!(args.parse_one()));
+    Ok(())
+}
+
+fn cmd_ast2(args: &Args) -> Result<()> {
+    use regex_syntax2::Parser;
+
+    let parser = Parser::new();
+    let ast = try!(parser.parse(&args.arg_pattern));
+    println!("{:#?}", ast);
     Ok(())
 }
 
